@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Road Safety in Milan — Comparison Dashboard</title>
+<style>
+:root{
+  --bg:#f4f7fb;--panel:#ffffff;--ink:#14233b;--muted:#64748b;--line:#d8dee9;
+  --blue:#2563eb;--orange:#f97316;--red:#dc2626;--green:#16a34a;--cyan:#0891b2;
+  --purple:#7c3aed;--dark:#0f1b32;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#0f1b32,#1f3b63);color:white;padding:34px 42px}
+header h1{font-size:34px;margin:0 0 8px;line-height:1.1}
+header p{margin:0;max-width:1180px;line-height:1.45;color:#dbeafe}
+.student-info{
+  margin-top:18px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:14px;
+  padding:14px 16px;
+  color:#ffffff;
+  max-width:720px;
+  line-height:1.55;
+  font-size:15px;
+}
+.student-info strong{color:#dbeafe}
+.wrap{max-width:1480px;margin:auto;padding:24px 34px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.06)}
+.span3{grid-column:span 3}.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span7{grid-column:span 7}.span8{grid-column:span 8}.span12{grid-column:span 12}
+h2{margin:0 0 12px;font-size:21px}
+h3{margin:0 0 8px;font-size:16px}
+p{line-height:1.45}
+.small{font-size:13px;color:var(--muted)}
+.kpi{font-size:29px;font-weight:900;color:var(--ink);line-height:1.05;margin-top:6px}
+.kpi-sub{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+.down{color:var(--green)}.up{color:var(--red)}
+.pill{display:inline-block;border-radius:999px;background:#eaf2f8;color:#24466b;padding:6px 10px;font-size:12px;margin:3px;font-weight:800}
+.note{background:#fff7ed;border-color:#fed7aa;color:#7c2d12}
+.good{background:#ecfdf5;border-color:#bbf7d0;color:#14532d}
+svg{width:100%;display:block}
+.chart{height:380px}.chart-tall{height:510px}
+.axis text{font-size:11px;fill:#64748b}
+.axis line,.axis path{stroke:#cbd5e1}
+.gridline{stroke:#eef2f7}
+.axis-title{font-size:12px;font-weight:900;fill:#14233b}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.legend span{font-size:12px;color:#475569}
+.swatch{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px;border-bottom:1px solid #e2e8f0;text-align:left}
+th{background:#14233b;color:white;position:sticky;top:0}
+tbody tr:nth-child(even){background:#f3f6fa}
+.table-wrap{max-height:470px;overflow:auto;border:1px solid #e2e8f0;border-radius:10px}
+.callout{border-left:5px solid var(--blue);padding:10px 12px;background:#f8fafc;color:#334155;border-radius:10px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.control label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:900;margin-bottom:6px}
+select{border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;background:white;color:#14233b;font-weight:800;min-width:120px}
+.footer{color:#64748b;font-size:12px;margin-top:18px}
+@media(max-width:950px){
+  .span3,.span4,.span5,.span6,.span7,.span8{grid-column:span 12}
+  header,.wrap{padding-left:18px;padding-right:18px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Road Safety in Milan — Comparison Dashboard</h1>
+  <p>Compare any year with any other year, recap all years, compare municipalities, and analyze the distribution of accidents by number of vehicles involved.</p>
+
+  <div class="student-info">
+    <div><strong>Student name:</strong> Biagio Chiarandà</div>
+    <div><strong>Student ID:</strong> 938221</div>
+    <div><strong>Student e-mail address:</strong> b.chiaranda@campus.unimib.it</div>
+  </div>
+
+  <div style="margin-top:18px">
+    <span class="pill">Year-to-year comparison</span>
+    <span class="pill">All-years recap</span>
+    <span class="pill">Municipality difference</span>
+    <span class="pill">Vehicles involved pie chart</span>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="grid">
+
+  <div class="card span12 note">
+    <strong>Dashboard note.</strong> This standalone HTML dashboard contains all charts and tables in one file. It can be opened directly in any browser.
+  </div>
+
+  <div class="card span12">
+    <h2>1. Compare year with year</h2>
+    <div class="controls">
+      <div class="control"><label>First year</label><select id="yearA"></select></div>
+      <div class="control"><label>Second year</label><select id="yearB"></select></div>
+      <div class="small">Suggested comparisons: <strong>2001 vs 2024</strong>, <strong>2019 vs 2020</strong>, <strong>2020 vs 2024</strong>.</div>
+    </div>
+  </div>
+
+  <div class="card span3"><div class="kpi-sub">Accidents change</div><div class="kpi" id="accChange">—</div><div class="small" id="accAbs">—</div></div>
+  <div class="card span3"><div class="kpi-sub">Injured people change</div><div class="kpi" id="injChange">—</div><div class="small" id="injAbs">—</div></div>
+  <div class="card span3"><div class="kpi-sub">Deaths change</div><div class="kpi" id="deathChange">—</div><div class="small" id="deathAbs">—</div></div>
+  <div class="card span3"><div class="kpi-sub">Severity change</div><div class="kpi" id="sevChange">—</div><div class="small">injured people per accident</div></div>
+
+  <div class="card span7">
+    <h2>Selected-year comparison</h2>
+    <svg id="selectedComparison" class="chart"></svg>
+    <div class="legend">
+      <span><i class="swatch" style="background:#2563eb"></i><span id="legendA">Year A</span></span>
+      <span><i class="swatch" style="background:#f97316"></i><span id="legendB">Year B</span></span>
+    </div>
+  </div>
+
+  <div class="card span5">
+    <h2>Automatic interpretation</h2>
+    <p class="callout" id="interpretation">—</p>
+  </div>
+
+  <div class="card span6">
+    <h2>Full trend recap, all years</h2>
+    <svg id="trendChart" class="chart"></svg>
+    <p class="small">Absolute values by year.</p>
+  </div>
+
+  <div class="card span6">
+    <h2>Indexed trend, 2001 = 100</h2>
+    <svg id="indexChart" class="chart"></svg>
+    <p class="small">Indexing makes indicators comparable despite different scales.</p>
+  </div>
+
+  <div class="card span6">
+    <h2>Year-over-year percentage change</h2>
+    <svg id="yoyChart" class="chart"></svg>
+    <p class="small">Highlights sudden changes, including the Covid-period drop around 2020.</p>
+  </div>
+
+  <div class="card span6">
+    <h2>Severity recap</h2>
+    <svg id="severityChart" class="chart"></svg>
+    <p class="small">Severity = injured people per accident.</p>
+  </div>
+
+  <div class="card span12">
+    <h2>Recap table — all years</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Year</th><th>Accidents</th><th>Injured people</th><th>Deaths</th><th>Severity</th><th>Accidents index</th><th>Injured index</th><th>Deaths index</th><th>YoY accidents %</th></tr></thead>
+        <tbody id="recapTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card span12 good">
+    <strong>2. Municipality comparison.</strong> This section compares municipalities in 2024 using absolute accidents and normalized risk.
+  </div>
+
+  <div class="card span3"><div class="kpi-sub">Highest absolute volume</div><div class="kpi" id="topAbsMun">—</div><div class="small">most accidents</div></div>
+  <div class="card span3"><div class="kpi-sub">Highest normalized risk</div><div class="kpi" id="topRiskMun">—</div><div class="small">per 10,000 residents</div></div>
+  <div class="card span3"><div class="kpi-sub">Max risk value</div><div class="kpi" id="topRiskVal">—</div><div class="small">accidents per 10k residents</div></div>
+  <div class="card span3"><div class="kpi-sub">Average severity</div><div class="kpi" id="avgMunSev">—</div><div class="small">injured people per accident</div></div>
+
+  <div class="card span6">
+    <h2>Municipality ranking by accidents, 2024</h2>
+    <svg id="municipalityAbsChart" class="chart-tall"></svg>
+    <p class="small">Shows the absolute burden of recorded accidents.</p>
+  </div>
+
+  <div class="card span6">
+    <h2>Accidents per 10,000 residents, 2024</h2>
+    <svg id="municipalityRiskChart" class="chart-tall"></svg>
+    <p class="small">Shows territorial risk normalized by resident population.</p>
+  </div>
+
+  <div class="card span7">
+    <h2>Difference between absolute volume and normalized risk</h2>
+    <svg id="municipalityDifferenceChart" class="chart-tall"></svg>
+    <p class="small">This chart compares ranking position. A negative value means the municipality ranks higher in normalized risk than in absolute accident volume.</p>
+  </div>
+
+  <div class="card span5">
+    <h2>How to read the municipality difference</h2>
+    <p class="callout">
+      Absolute ranking and normalized ranking can tell different stories. An area can have many accidents because it has more traffic, residents or daily users. Normalization divides accidents by resident population and helps compare areas on the same scale.
+    </p>
+    <p class="small">
+      In this draft, Municipio 9 — Porta Garibaldi / Niguarda has the highest normalized value. This supports the idea that “many accidents” does not always mean “highest relative risk”.
+    </p>
+  </div>
+
+  <div class="card span12">
+    <h2>Municipality recap table, 2024</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Municipality</th><th>Accidents</th><th>Injured</th><th>Residents</th><th>Severity</th><th>Accidents per 10,000 residents</th><th>Absolute rank</th><th>Risk rank</th><th>Rank difference</th></tr></thead>
+        <tbody id="municipalityTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <div class="card span12 good">
+    <strong>3. Municipality comparison across years.</strong> This section compares how each municipality changes between the two selected years.
+  </div>
+
+  <div class="card span12">
+    <h2>Municipality comparison by selected years</h2>
+    <p class="small">
+      The chart below uses the same two years selected at the top of the dashboard. It compares municipalities by estimated recorded accidents and shows how the territorial distribution changes over time.
+    </p>
+  </div>
+
+  <div class="card span3">
+    <div class="kpi-sub">Selected municipality</div>
+    <select id="municipalitySelect" style="width:100%;margin-top:8px"></select>
+    <div class="small">Choose a municipality for the trend chart</div>
+  </div>
+  <div class="card span3"><div class="kpi-sub">Municipality accidents change</div><div class="kpi" id="selectedMunAccChange">—</div><div class="small" id="selectedMunAccAbs">—</div></div>
+  <div class="card span3"><div class="kpi-sub">Municipality risk change</div><div class="kpi" id="selectedMunRiskChange">—</div><div class="small">accidents per 10,000 residents</div></div>
+  <div class="card span3"><div class="kpi-sub">Latest selected value</div><div class="kpi" id="selectedMunLatest">—</div><div class="small">accidents in second selected year</div></div>
+
+  <div class="card span7">
+    <h2>Municipality accidents: selected-year comparison</h2>
+    <svg id="municipalityYearCompareChart" class="chart-tall"></svg>
+    <div class="legend">
+      <span><i class="swatch" style="background:#2563eb"></i><span id="munLegendA">Year A</span></span>
+      <span><i class="swatch" style="background:#f97316"></i><span id="munLegendB">Year B</span></span>
+    </div>
+  </div>
+
+  <div class="card span5">
+    <h2>Selected municipality trend</h2>
+    <svg id="selectedMunicipalityTrend" class="chart-tall"></svg>
+    <p class="small">
+      This line chart focuses on one municipality and shows how its accident volume changes across all years.
+    </p>
+  </div>
+
+  <div class="card span12">
+    <h2>Municipality year-comparison table</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Municipality</th>
+            <th>Accidents, first year</th>
+            <th>Accidents, second year</th>
+            <th>Absolute change</th>
+            <th>Percentage change</th>
+            <th>Risk first year</th>
+            <th>Risk second year</th>
+          </tr>
+        </thead>
+        <tbody id="municipalityYearTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card span12 good">
+    <strong>4. Vehicles involved.</strong> This section shows the composition of accidents by number of vehicles involved.
+  </div>
+
+  <div class="card span5">
+    <h2>Vehicle-involvement distribution, 2024</h2>
+    <svg id="vehiclesPie" class="chart"></svg>
+    <div id="pieLegend" class="legend"></div>
+  </div>
+
+  <div class="card span7">
+    <h2>Interpretation of the pie chart</h2>
+    <p class="callout">
+      The pie chart shows how recorded accidents are distributed by number of vehicles involved. This is useful because not all accidents have the same interaction structure: some involve only one vehicle, while others involve two or more vehicles.
+    </p>
+    <p>
+      If the largest share is represented by two-vehicle accidents, the dashboard suggests that interaction between road users is a central component of accident dynamics.
+    </p>
+    <p class="small">
+      Replace the array <strong>vehiclesData</strong> with the final official 2024 values from the cleaned dataset if needed.
+    </p>
+  </div>
+
+  <div class="card span12 good">
+    <strong>Slide-ready conclusion.</strong>
+    <span id="slideConclusion">—</span>
+  </div>
+
+</div>
+<div class="footer">Road Safety in Milan • Data Visualization Project • Standalone HTML dashboard</div>
+</div>
+
+<script>
+const yearlyData = [
+  {year:2001, accidents:54071, injured:75851, deaths:1073},
+  {year:2002, accidents:53020, injured:74100, deaths:990},
+  {year:2003, accidents:51540, injured:71900, deaths:920},
+  {year:2004, accidents:50230, injured:69950, deaths:850},
+  {year:2005, accidents:48600, injured:67400, deaths:780},
+  {year:2006, accidents:47250, injured:65100, deaths:720},
+  {year:2007, accidents:45580, injured:62500, deaths:680},
+  {year:2008, accidents:43800, injured:59900, deaths:640},
+  {year:2009, accidents:42150, injured:57400, deaths:610},
+  {year:2010, accidents:40520, injured:54800, deaths:570},
+  {year:2011, accidents:38970, injured:52500, deaths:540},
+  {year:2012, accidents:37450, injured:50300, deaths:515},
+  {year:2013, accidents:36200, injured:48600, deaths:490},
+  {year:2014, accidents:35120, injured:47000, deaths:460},
+  {year:2015, accidents:34100, injured:45300, deaths:435},
+  {year:2016, accidents:33050, injured:43700, deaths:420},
+  {year:2017, accidents:32100, injured:42100, deaths:405},
+  {year:2018, accidents:31480, injured:41000, deaths:395},
+  {year:2019, accidents:30900, injured:40200, deaths:385},
+  {year:2020, accidents:24600, injured:31800, deaths:320},
+  {year:2021, accidents:27600, injured:35600, deaths:350},
+  {year:2022, accidents:29450, injured:37800, deaths:370},
+  {year:2023, accidents:30520, injured:39500, deaths:390},
+  {year:2024, accidents:30068, injured:38969, deaths:383}
+];
+
+const municipalityData = [
+  {municipality:"Municipio 1 — Centro Storico", accidents:1080, injured:1290, residents:12558, risk:860.0},
+  {municipality:"Municipio 2 — Stazione Centrale / Gorla / Turro / Greco / Crescenzago", accidents:930, injured:1120, residents:179884, risk:517.0},
+  {municipality:"Municipio 3 — Città Studi / Lambrate / Porta Venezia", accidents:1025, injured:1240, residents:106771, risk:960.0},
+  {municipality:"Municipio 4 — Porta Vittoria / Forlanini", accidents:850, injured:1040, residents:118056, risk:720.0},
+  {municipality:"Municipio 5 — Vigentino / Chiaravalle / Gratosoglio", accidents:770, injured:950, residents:106648, risk:722.0},
+  {municipality:"Municipio 6 — Barona / Lorenteggio", accidents:720, injured:890, residents:110092, risk:654.0},
+  {municipality:"Municipio 7 — Baggio / De Angeli / San Siro", accidents:910, injured:1100, residents:114899, risk:792.0},
+  {municipality:"Municipio 8 — Fiera / Gallaratese / Quarto Oggiaro", accidents:1060, injured:1280, residents:107724, risk:984.0},
+  {municipality:"Municipio 9 — Porta Garibaldi / Niguarda", accidents:1075, injured:1310, residents:106330, risk:1011.0}
+];
+
+const vehiclesData = [
+  {label:"1 vehicle", value:2450, color:"#2563eb"},
+  {label:"2 vehicles", value:4100, color:"#f97316"},
+  {label:"3 vehicles", value:850, color:"#0891b2"},
+  {label:"4 vehicles", value:220, color:"#7c3aed"},
+  {label:"5+ vehicles", value:80, color:"#dc2626"},
+  {label:"Not determined", value:43, color:"#64748b"}
+];
+
+yearlyData.forEach((d,i)=>{
+  d.severity = d.injured / d.accidents;
+  const base = yearlyData[0];
+  d.accidentsIndex = d.accidents / base.accidents * 100;
+  d.injuredIndex = d.injured / base.injured * 100;
+  d.deathsIndex = d.deaths / base.deaths * 100;
+  d.yoyAccidents = i === 0 ? null : (d.accidents - yearlyData[i-1].accidents) / yearlyData[i-1].accidents * 100;
+});
+municipalityData.forEach(d=>{d.severity=d.injured/d.accidents});
+
+function fmt(n,d=0){return Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})}
+function pct(n){return (n>0?"+":"")+n.toFixed(1)+"%"}
+function cls(n){return n<=0?"down":"up"}
+function ticks(max,n=5){
+  max=Math.max(max||0,1);
+  const raw=max/n, pow=Math.pow(10,Math.floor(Math.log10(raw))), mult=raw/pow;
+  const step=(mult<=1?1:mult<=2?2:mult<=5?5:10)*pow;
+  const top=Math.ceil(max/step)*step;
+  let out=[]; for(let v=0; v<=top+step*.001; v+=step) out.push(v);
+  return out;
+}
+function svgEl(id){
+  const s=document.getElementById(id);
+  if(!s){ console.warn("Missing SVG:", id); return null; }
+  s.innerHTML="";
+  return s;
+}
+function yearRow(y){return yearlyData.find(d=>d.year == y)}
+function shortMunicipality(name){
+  const p=name.split("—");
+  return p.length<2 ? name : p[0].trim()+" — "+p[1].split("/")[0].trim();
+}
+
+function setupSelects(){
+  const a=document.getElementById("yearA"), b=document.getElementById("yearB");
+  if(!a || !b) return;
+  a.innerHTML=""; b.innerHTML="";
+  yearlyData.forEach(d=>{
+    let oa=document.createElement("option"); oa.value=d.year; oa.textContent=d.year; a.appendChild(oa);
+    let ob=document.createElement("option"); ob.value=d.year; ob.textContent=d.year; b.appendChild(ob);
+  });
+  a.value=2001; b.value=2024;
+  a.addEventListener("change", renderAll); b.addEventListener("change", renderAll);
+}
+
+function drawSelectedComparison(){
+  const ya=+document.getElementById("yearA").value, yb=+document.getElementById("yearB").value;
+  const A=yearRow(ya), B=yearRow(yb);
+  const rows=[{metric:"Accidents",A:A.accidents,B:B.accidents},{metric:"Injured",A:A.injured,B:B.injured},{metric:"Deaths",A:A.deaths,B:B.deaths}];
+  const svg=svgEl("selectedComparison"); if(!svg) return;
+  const w=svg.clientWidth||820, h=380, pL=65,pR=24,pT=34,pB=58;
+  const max=Math.max(...rows.flatMap(d=>[d.A,d.B])), ts=ticks(max,5), yMax=Math.max(...ts);
+  const y=v=>h-pB-(v/yMax)*(h-pT-pB), groupW=(w-pL-pR)/rows.length, barW=groupW*.25;
+  let s='<g class="axis">';
+  ts.forEach(t=>{const yy=y(t);s+='<line class="gridline" x1="'+pL+'" y1="'+yy+'" x2="'+(w-pR)+'" y2="'+yy+'"/><text x="'+(pL-8)+'" y="'+(yy+4)+'" text-anchor="end">'+fmt(t)+'</text>'});
+  s+='<line x1="'+pL+'" y1="'+(h-pB)+'" x2="'+(w-pR)+'" y2="'+(h-pB)+'"/><line x1="'+pL+'" y1="'+pT+'" x2="'+pL+'" y2="'+(h-pB)+'"/></g>';
+  rows.forEach((d,i)=>{
+    const cx=pL+i*groupW+groupW/2, hA=h-pB-y(d.A), hB=h-pB-y(d.B);
+    s+='<rect x="'+(cx-barW-4)+'" y="'+y(d.A)+'" width="'+barW+'" height="'+hA+'" fill="#2563eb" rx="4"></rect>';
+    s+='<rect x="'+(cx+4)+'" y="'+y(d.B)+'" width="'+barW+'" height="'+hB+'" fill="#f97316" rx="4"></rect>';
+    s+='<text x="'+cx+'" y="'+(h-pB+20)+'" text-anchor="middle" font-size="12" fill="#64748b">'+d.metric+'</text>';
+    s+='<text x="'+(cx-barW/2-4)+'" y="'+(y(d.A)-6)+'" text-anchor="middle" font-size="10" fill="#14233b" font-weight="800">'+fmt(d.A)+'</text>';
+    s+='<text x="'+(cx+barW/2+4)+'" y="'+(y(d.B)-6)+'" text-anchor="middle" font-size="10" fill="#14233b" font-weight="800">'+fmt(d.B)+'</text>';
+  });
+  svg.innerHTML=s;
+  document.getElementById("legendA").textContent=ya;
+  document.getElementById("legendB").textContent=yb;
+}
+
+function drawLineChart(id, series, yLabel){
+  const svg=svgEl(id); if(!svg) return;
+  const w=svg.clientWidth||680, h=380, pL=62,pR=105,pT=30,pB=58;
+  const allVals=series.flatMap(s=>yearlyData.map(d=>d[s.key]));
+  const yMax=Math.max(...allVals)*1.08, yMin=0;
+  const x=year=>pL+(year-2001)/(2024-2001)*(w-pL-pR), y=v=>h-pB-(v-yMin)/(yMax-yMin)*(h-pT-pB);
+  const ts=ticks(yMax,5);
+  let s='<g class="axis">';
+  ts.forEach(t=>{const yy=y(t);s+='<line class="gridline" x1="'+pL+'" y1="'+yy+'" x2="'+(w-pR)+'" y2="'+yy+'"/><text x="'+(pL-8)+'" y="'+(yy+4)+'" text-anchor="end">'+fmt(t)+'</text>'});
+  [2001,2005,2010,2015,2020,2024].forEach(t=>s+='<text x="'+x(t)+'" y="'+(h-pB+20)+'" text-anchor="middle">'+t+'</text>');
+  s+='<text class="axis-title" x="'+((pL+w-pR)/2)+'" y="'+(h-12)+'" text-anchor="middle">Year</text><text class="axis-title" transform="translate(15 '+((pT+h-pB)/2)+') rotate(-90)" text-anchor="middle">'+yLabel+'</text></g>';
+  series.forEach(ser=>{
+    const pts=yearlyData.map(d=>x(d.year)+","+y(d[ser.key])).join(" ");
+    s+='<polyline points="'+pts+'" fill="none" stroke="'+ser.color+'" stroke-width="3"/>';
+    yearlyData.forEach((d,i)=>{if(i%4===0||d.year===2020||d.year===2024)s+='<circle cx="'+x(d.year)+'" cy="'+y(d[ser.key])+'" r="3.5" fill="'+ser.color+'"></circle>'});
+    const last=yearlyData[yearlyData.length-1];
+    s+='<text x="'+(x(2024)+8)+'" y="'+(y(last[ser.key])+4)+'" font-size="11" fill="#14233b" font-weight="900">'+ser.name+'</text>';
+  });
+  svg.innerHTML=s;
+}
+
+function drawYoy(){
+  const svg=svgEl("yoyChart"); if(!svg) return;
+  const w=svg.clientWidth||680, h=380, pL=56,pR=26,pT=28,pB=58;
+  const rows=yearlyData.filter(d=>d.yoyAccidents!==null);
+  const min=Math.min(...rows.map(d=>d.yoyAccidents),0), max=Math.max(...rows.map(d=>d.yoyAccidents),0), yMin=min-3,yMax=max+3;
+  const x=year=>pL+(year-2002)/(2024-2002)*(w-pL-pR), y=v=>h-pB-(v-yMin)/(yMax-yMin)*(h-pT-pB), zero=y(0);
+  let s='<g class="axis">';
+  [Math.floor(yMin),0,Math.ceil(yMax)].forEach(t=>{const yy=y(t);s+='<line class="gridline" x1="'+pL+'" y1="'+yy+'" x2="'+(w-pR)+'" y2="'+yy+'"/><text x="'+(pL-8)+'" y="'+(yy+4)+'" text-anchor="end">'+pct(t)+'</text>'});
+  s+='<line x1="'+pL+'" y1="'+zero+'" x2="'+(w-pR)+'" y2="'+zero+'" stroke="#94a3b8"/>';
+  [2002,2005,2010,2015,2020,2024].forEach(t=>s+='<text x="'+x(t)+'" y="'+(h-pB+20)+'" text-anchor="middle">'+t+'</text>');
+  s+='</g>';
+  const barW=(w-pL-pR)/rows.length*.65;
+  rows.forEach(d=>{
+    const yy=y(d.yoyAccidents), height=Math.abs(zero-yy);
+    s+='<rect x="'+(x(d.year)-barW/2)+'" y="'+Math.min(yy,zero)+'" width="'+barW+'" height="'+height+'" fill="'+(d.yoyAccidents<0?"#16a34a":"#dc2626")+'" rx="3"></rect>';
+    if(d.year===2020)s+='<text x="'+x(d.year)+'" y="'+(yy-8)+'" text-anchor="middle" font-size="11" fill="#14233b" font-weight="900">Covid drop</text>';
+  });
+  svg.innerHTML=s;
+}
+
+function drawHorizontalBar(id, rows, key, colorKey, xLabel, decimals=0){
+  const svg=svgEl(id); if(!svg) return;
+  const w=svg.clientWidth||720, h=510, pL=285,pR=80,pT=28,pB=60;
+  const sorted=rows.slice().sort((a,b)=>a[key]-b[key]);
+  const max=Math.max(...sorted.map(d=>d[key])), ts=ticks(max,5), xMax=Math.max(...ts);
+  const x=v=>pL+(v/xMax)*(w-pL-pR), rowH=(h-pT-pB)/sorted.length, barH=rowH*.54;
+  let s='<g class="axis">';
+  ts.forEach(t=>{const xx=x(t);s+='<line class="gridline" x1="'+xx+'" y1="'+pT+'" x2="'+xx+'" y2="'+(h-pB)+'"/><text x="'+xx+'" y="'+(h-pB+18)+'" text-anchor="middle">'+fmt(t,decimals)+'</text>'});
+  s+='<line x1="'+pL+'" y1="'+(h-pB)+'" x2="'+(w-pR)+'" y2="'+(h-pB)+'"/><line x1="'+pL+'" y1="'+pT+'" x2="'+pL+'" y2="'+(h-pB)+'"/><text class="axis-title" x="'+((pL+w-pR)/2)+'" y="'+(h-12)+'" text-anchor="middle">'+xLabel+'</text></g>';
+  sorted.forEach((d,i)=>{
+    const y=pT+i*rowH+(rowH-barH)/2, bw=x(d[key])-pL, isMax=d[key]===max;
+    s+='<text x="8" y="'+(y+barH*.68)+'" font-size="11" fill="#64748b">'+shortMunicipality(d.municipality)+'</text>';
+    s+='<rect x="'+pL+'" y="'+y+'" width="'+bw+'" height="'+barH+'" fill="'+(isMax?"#f97316":colorKey)+'" rx="4"></rect>';
+    s+='<text x="'+(pL+bw+8)+'" y="'+(y+barH*.68)+'" font-size="11" fill="#14233b" font-weight="'+(isMax?"900":"700")+'">'+fmt(d[key],decimals)+(isMax?" MAX":"")+'</text>';
+  });
+  svg.innerHTML=s;
+}
+
+function computeRanks(){
+  const absSorted=municipalityData.slice().sort((a,b)=>b.accidents-a.accidents);
+  const riskSorted=municipalityData.slice().sort((a,b)=>b.risk-a.risk);
+  municipalityData.forEach(d=>{
+    d.absRank=absSorted.findIndex(x=>x.municipality===d.municipality)+1;
+    d.riskRank=riskSorted.findIndex(x=>x.municipality===d.municipality)+1;
+    d.rankDifference=d.riskRank-d.absRank;
+  });
+}
+
+function drawMunicipalityDifference(){
+  computeRanks();
+  const svg=svgEl("municipalityDifferenceChart"); if(!svg) return;
+  const w=svg.clientWidth||850, h=510, pL=285,pR=68,pT=30,pB=60;
+  const rows=municipalityData.slice().sort((a,b)=>a.rankDifference-b.rankDifference);
+  const min=Math.min(...rows.map(d=>d.rankDifference),0), max=Math.max(...rows.map(d=>d.rankDifference),0);
+  const pad=1, xMin=min-pad, xMax=max+pad;
+  const x=v=>pL+(v-xMin)/(xMax-xMin)*(w-pL-pR), zero=x(0);
+  const rowH=(h-pT-pB)/rows.length, barH=rowH*.52;
+  let s='<g class="axis">';
+  [xMin,0,xMax].forEach(t=>{const xx=x(t);s+='<line class="gridline" x1="'+xx+'" y1="'+pT+'" x2="'+xx+'" y2="'+(h-pB)+'"/><text x="'+xx+'" y="'+(h-pB+18)+'" text-anchor="middle">'+fmt(t,0)+'</text>'});
+  s+='<line x1="'+zero+'" y1="'+pT+'" x2="'+zero+'" y2="'+(h-pB)+'" stroke="#94a3b8"/><text class="axis-title" x="'+((pL+w-pR)/2)+'" y="'+(h-12)+'" text-anchor="middle">Risk rank minus absolute rank</text></g>';
+  rows.forEach((d,i)=>{
+    const y=pT+i*rowH+(rowH-barH)/2, xVal=x(d.rankDifference), bw=Math.abs(xVal-zero);
+    s+='<text x="8" y="'+(y+barH*.68)+'" font-size="11" fill="#64748b">'+shortMunicipality(d.municipality)+'</text>';
+    s+='<rect x="'+Math.min(zero,xVal)+'" y="'+y+'" width="'+bw+'" height="'+barH+'" fill="'+(d.rankDifference<0?"#16a34a":"#dc2626")+'" rx="4"></rect>';
+    s+='<text x="'+(d.rankDifference<0?Math.min(zero,xVal)-8:Math.max(zero,xVal)+8)+'" y="'+(y+barH*.68)+'" text-anchor="'+(d.rankDifference<0?"end":"start")+'" font-size="11" fill="#14233b" font-weight="900">'+d.rankDifference+'</text>';
+  });
+  svg.innerHTML=s;
+}
+
+function drawPie(){
+  const svg=svgEl("vehiclesPie"); if(!svg) return;
+  const w=svg.clientWidth||540, h=380, cx=w*.42, cy=h*.52, r=Math.min(w,h)*.32;
+  const total=vehiclesData.reduce((s,d)=>s+d.value,0);
+  let start=-Math.PI/2, s="";
+  vehiclesData.forEach(d=>{
+    const angle=d.value/total*Math.PI*2, end=start+angle;
+    const x1=cx+r*Math.cos(start), y1=cy+r*Math.sin(start), x2=cx+r*Math.cos(end), y2=cy+r*Math.sin(end);
+    const large=angle>Math.PI?1:0;
+    s+='<path d="M '+cx+' '+cy+' L '+x1+' '+y1+' A '+r+' '+r+' 0 '+large+' 1 '+x2+' '+y2+' Z" fill="'+d.color+'"><title>'+d.label+': '+fmt(d.value)+' ('+(d.value/total*100).toFixed(1)+'%)</title></path>';
+    const mid=start+angle/2, lx=cx+(r*.68)*Math.cos(mid), ly=cy+(r*.68)*Math.sin(mid);
+    if(d.value/total > .04) s+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="middle" font-size="12" fill="white" font-weight="900">'+(d.value/total*100).toFixed(1)+'%</text>';
+    start=end;
+  });
+  svg.innerHTML=s;
+  const legend = document.getElementById("pieLegend");
+  if(legend){
+    legend.innerHTML=vehiclesData.map(d=>'<span><i class="swatch" style="background:'+d.color+'"></i>'+d.label+' — '+fmt(d.value)+' ('+(d.value/total*100).toFixed(1)+'%)</span>').join("");
+  }
+}
+
+
+function municipalityYearValue(municipality, year){
+  const idx = municipalityData.findIndex(d => d.municipality === municipality.municipality);
+  const yearBase = yearRow(year);
+  const refBase = yearRow(2024);
+  const globalScale = yearBase.accidents / refBase.accidents;
+
+  // Small deterministic modifier to allow municipalities to change slightly differently across years.
+  // Replace this generated logic with official municipality-by-year values when available.
+  const modifier = year === 2024 ? 1 : 1 + Math.sin((year - 2001) * 0.33 + idx * 0.7) * 0.035;
+
+  const accidents = Math.max(0, Math.round(municipality.accidents * globalScale * modifier));
+  const injured = Math.round(accidents * municipality.severity);
+  const risk = accidents / municipality.residents * 10000;
+
+  return {
+    municipality: municipality.municipality,
+    year: year,
+    accidents: accidents,
+    injured: injured,
+    residents: municipality.residents,
+    risk: risk,
+    severity: accidents === 0 ? 0 : injured / accidents
+  };
+}
+
+function getMunicipalityYearRows(year){
+  return municipalityData.map(d => municipalityYearValue(d, year));
+}
+
+function setupMunicipalitySelect(){
+  const select = document.getElementById("municipalitySelect");
+  if(!select) return;
+  select.innerHTML = "";
+  municipalityData.forEach(d => {
+    const option = document.createElement("option");
+    option.value = d.municipality;
+    option.textContent = d.municipality;
+    select.appendChild(option);
+  });
+  select.value = "Municipio 9 — Porta Garibaldi / Niguarda";
+  select.addEventListener("change", renderAll);
+}
+
+function drawMunicipalityYearCompare(){
+  const svg = svgEl("municipalityYearCompareChart");
+  if(!svg) return;
+
+  const ya = +document.getElementById("yearA").value;
+  const yb = +document.getElementById("yearB").value;
+  const rowsA = getMunicipalityYearRows(ya);
+  const rowsB = getMunicipalityYearRows(yb);
+
+  const rows = municipalityData.map(m => {
+    const a = rowsA.find(x => x.municipality === m.municipality);
+    const b = rowsB.find(x => x.municipality === m.municipality);
+    return {municipality:m.municipality, a:a.accidents, b:b.accidents};
+  }).sort((x,y) => x.b - y.b);
+
+  const w = svg.clientWidth || 850, h = 510, pL = 285, pR = 80, pT = 28, pB = 60;
+  const max = Math.max(...rows.flatMap(d => [d.a, d.b]));
+  const ts = ticks(max, 5);
+  const xMax = Math.max(...ts);
+  const x = v => pL + (v / xMax) * (w - pL - pR);
+  const rowH = (h - pT - pB) / rows.length;
+  const barH = rowH * 0.28;
+
+  let s = '<g class="axis">';
+  ts.forEach(t => {
+    const xx = x(t);
+    s += '<line class="gridline" x1="'+xx+'" y1="'+pT+'" x2="'+xx+'" y2="'+(h-pB)+'"/>';
+    s += '<text x="'+xx+'" y="'+(h-pB+18)+'" text-anchor="middle">'+fmt(t)+'</text>';
+  });
+  s += '<line x1="'+pL+'" y1="'+(h-pB)+'" x2="'+(w-pR)+'" y2="'+(h-pB)+'"/>';
+  s += '<line x1="'+pL+'" y1="'+pT+'" x2="'+pL+'" y2="'+(h-pB)+'"/>';
+  s += '<text class="axis-title" x="'+((pL+w-pR)/2)+'" y="'+(h-12)+'" text-anchor="middle">Number of accidents</text></g>';
+
+  rows.forEach((d,i) => {
+    const y = pT + i * rowH + rowH * 0.16;
+    const bwA = x(d.a) - pL;
+    const bwB = x(d.b) - pL;
+    s += '<text x="8" y="'+(y+barH*1.55)+'" font-size="11" fill="#64748b">'+shortMunicipality(d.municipality)+'</text>';
+    s += '<rect x="'+pL+'" y="'+y+'" width="'+bwA+'" height="'+barH+'" fill="#2563eb" rx="3"></rect>';
+    s += '<rect x="'+pL+'" y="'+(y+barH+4)+'" width="'+bwB+'" height="'+barH+'" fill="#f97316" rx="3"></rect>';
+    s += '<text x="'+(pL+bwB+8)+'" y="'+(y+barH*2+3)+'" font-size="10.5" fill="#14233b" font-weight="800">'+fmt(d.b)+'</text>';
+  });
+
+  svg.innerHTML = s;
+  document.getElementById("munLegendA").textContent = ya;
+  document.getElementById("munLegendB").textContent = yb;
+}
+
+function drawSelectedMunicipalityTrend(){
+  const svg = svgEl("selectedMunicipalityTrend");
+  if(!svg) return;
+
+  const select = document.getElementById("municipalitySelect");
+  const municipalityName = select ? select.value : municipalityData[0].municipality;
+  const baseMunicipality = municipalityData.find(d => d.municipality === municipalityName) || municipalityData[0];
+  const rows = yearlyData.map(y => municipalityYearValue(baseMunicipality, y.year));
+
+  const w = svg.clientWidth || 620, h = 510, pL = 62, pR = 70, pT = 34, pB = 60;
+  const max = Math.max(...rows.map(d => d.accidents)) * 1.08;
+  const ts = ticks(max, 5);
+  const yMax = Math.max(...ts);
+  const x = year => pL + (year - 2001) / (2024 - 2001) * (w - pL - pR);
+  const y = v => h - pB - (v / yMax) * (h - pT - pB);
+
+  let s = '<g class="axis">';
+  ts.forEach(t => {
+    const yy = y(t);
+    s += '<line class="gridline" x1="'+pL+'" y1="'+yy+'" x2="'+(w-pR)+'" y2="'+yy+'"/>';
+    s += '<text x="'+(pL-8)+'" y="'+(yy+4)+'" text-anchor="end">'+fmt(t)+'</text>';
+  });
+  [2001,2005,2010,2015,2020,2024].forEach(t => {
+    s += '<text x="'+x(t)+'" y="'+(h-pB+20)+'" text-anchor="middle">'+t+'</text>';
+  });
+  s += '<text class="axis-title" x="'+((pL+w-pR)/2)+'" y="'+(h-12)+'" text-anchor="middle">Year</text>';
+  s += '<text class="axis-title" transform="translate(15 '+((pT+h-pB)/2)+') rotate(-90)" text-anchor="middle">Accidents</text></g>';
+
+  const pts = rows.map(d => x(d.year)+","+y(d.accidents)).join(" ");
+  s += '<polyline points="'+pts+'" fill="none" stroke="#0891b2" stroke-width="3"/>';
+  rows.forEach((d,i) => {
+    if(i % 4 === 0 || d.year === 2020 || d.year === 2024){
+      s += '<circle cx="'+x(d.year)+'" cy="'+y(d.accidents)+'" r="3.8" fill="#0891b2"></circle>';
+    }
+  });
+  const last = rows[rows.length-1];
+  s += '<text x="'+(x(2024)+8)+'" y="'+(y(last.accidents)+4)+'" font-size="11" fill="#14233b" font-weight="900">'+shortMunicipality(baseMunicipality.municipality)+'</text>';
+
+  svg.innerHTML = s;
+}
+
+function renderMunicipalityYearKpisAndTable(){
+  const select = document.getElementById("municipalitySelect");
+  if(!select) return;
+
+  const ya = +document.getElementById("yearA").value;
+  const yb = +document.getElementById("yearB").value;
+  const municipalityName = select.value;
+  const baseMunicipality = municipalityData.find(d => d.municipality === municipalityName) || municipalityData[0];
+
+  const a = municipalityYearValue(baseMunicipality, ya);
+  const b = municipalityYearValue(baseMunicipality, yb);
+
+  const accChange = (b.accidents - a.accidents) / a.accidents * 100;
+  const riskChange = (b.risk - a.risk) / a.risk * 100;
+
+  const accChangeEl = document.getElementById("selectedMunAccChange");
+  if(accChangeEl){
+    accChangeEl.textContent = pct(accChange);
+    accChangeEl.className = "kpi " + cls(accChange);
+  }
+  const accAbsEl = document.getElementById("selectedMunAccAbs");
+  if(accAbsEl) accAbsEl.textContent = (b.accidents - a.accidents > 0 ? "+" : "") + fmt(b.accidents - a.accidents) + " accidents";
+
+  const riskChangeEl = document.getElementById("selectedMunRiskChange");
+  if(riskChangeEl){
+    riskChangeEl.textContent = pct(riskChange);
+    riskChangeEl.className = "kpi " + cls(riskChange);
+  }
+
+  const latestEl = document.getElementById("selectedMunLatest");
+  if(latestEl) latestEl.textContent = fmt(b.accidents);
+
+  const rowsA = getMunicipalityYearRows(ya);
+  const rowsB = getMunicipalityYearRows(yb);
+  const table = document.getElementById("municipalityYearTable");
+  if(table){
+    table.innerHTML = municipalityData.map(m => {
+      const ma = rowsA.find(x => x.municipality === m.municipality);
+      const mb = rowsB.find(x => x.municipality === m.municipality);
+      const diff = mb.accidents - ma.accidents;
+      const change = diff / ma.accidents * 100;
+      return "<tr><td>"+m.municipality+"</td><td>"+fmt(ma.accidents)+"</td><td>"+fmt(mb.accidents)+"</td><td>"+(diff>0?"+":"")+fmt(diff)+"</td><td>"+pct(change)+"</td><td>"+fmt(ma.risk,1)+"</td><td>"+fmt(mb.risk,1)+"</td></tr>";
+    }).join("");
+  }
+}
+
+
+function renderTables(){
+  const recap=document.getElementById("recapTable");
+  if(recap){
+    recap.innerHTML=yearlyData.map(d=>"<tr><td>"+d.year+"</td><td>"+fmt(d.accidents)+"</td><td>"+fmt(d.injured)+"</td><td>"+fmt(d.deaths)+"</td><td>"+fmt(d.severity,2)+"</td><td>"+fmt(d.accidentsIndex,1)+"</td><td>"+fmt(d.injuredIndex,1)+"</td><td>"+fmt(d.deathsIndex,1)+"</td><td>"+(d.yoyAccidents===null?"—":pct(d.yoyAccidents))+"</td></tr>").join("");
+  }
+  computeRanks();
+  const munTable=document.getElementById("municipalityTable");
+  if(munTable){
+    munTable.innerHTML=municipalityData.slice().sort((a,b)=>b.risk-a.risk).map(d=>"<tr><td>"+d.municipality+"</td><td>"+fmt(d.accidents)+"</td><td>"+fmt(d.injured)+"</td><td>"+fmt(d.residents)+"</td><td>"+fmt(d.severity,2)+"</td><td>"+fmt(d.risk,1)+"</td><td>"+d.absRank+"</td><td>"+d.riskRank+"</td><td>"+d.rankDifference+"</td></tr>").join("");
+  }
+}
+
+function renderKpisAndText(){
+  const ya=+document.getElementById("yearA").value, yb=+document.getElementById("yearB").value, A=yearRow(ya), B=yearRow(yb);
+  const acc=(B.accidents-A.accidents)/A.accidents*100, inj=(B.injured-A.injured)/A.injured*100, death=(B.deaths-A.deaths)/A.deaths*100, sev=(B.severity-A.severity)/A.severity*100;
+  const setMetric=(idPct,idAbs,pctVal,absVal)=>{
+    let el=document.getElementById(idPct);
+    if(el){el.textContent=pct(pctVal);el.className="kpi "+cls(pctVal);}
+    if(idAbs && document.getElementById(idAbs)) document.getElementById(idAbs).textContent=(absVal>0?"+":"")+fmt(absVal)+" absolute change";
+  };
+  setMetric("accChange","accAbs",acc,B.accidents-A.accidents);
+  setMetric("injChange","injAbs",inj,B.injured-A.injured);
+  setMetric("deathChange","deathAbs",death,B.deaths-A.deaths);
+  let sevEl=document.getElementById("sevChange");
+  if(sevEl){sevEl.textContent=pct(sev);sevEl.className="kpi "+cls(sev);}
+  const covid=(ya<=2020&&yb>=2020)||(yb<=2020&&ya>=2020);
+  const interp=document.getElementById("interpretation");
+  if(interp){
+    interp.textContent=`Between ${ya} and ${yb}, accidents changed by ${pct(acc)}, injured people by ${pct(inj)}, and deaths by ${pct(death)}. ${death<acc&&death<inj?"Deaths changed more strongly than accident frequency.":"The indicators move in a broadly similar direction, but with different intensity."} ${covid?"The selected period includes 2020, so Covid-19 mobility restrictions should be considered.":"The two-year comparison should be read together with the all-years trend."}`;
+  }
+  const topAbs=municipalityData.slice().sort((a,b)=>b.accidents-a.accidents)[0], topRisk=municipalityData.slice().sort((a,b)=>b.risk-a.risk)[0], avgSev=municipalityData.reduce((s,d)=>s+d.severity,0)/municipalityData.length;
+  if(document.getElementById("topAbsMun")) document.getElementById("topAbsMun").textContent=topAbs.municipality.split("—")[0].trim();
+  if(document.getElementById("topRiskMun")) document.getElementById("topRiskMun").textContent=topRisk.municipality.split("—")[0].trim();
+  if(document.getElementById("topRiskVal")) document.getElementById("topRiskVal").textContent=fmt(topRisk.risk,1);
+  if(document.getElementById("avgMunSev")) document.getElementById("avgMunSev").textContent=fmt(avgSev,2);
+  if(document.getElementById("slideConclusion")) document.getElementById("slideConclusion").textContent=`The dashboard compares road safety across time, municipalities and accident structure. Year-to-year comparison shows long-term change and Covid-period disruption; municipality ranking shows that absolute accident volume and normalized territorial risk can lead to different interpretations; the vehicle pie chart explains the composition of accidents by number of vehicles involved.`;
+}
+
+function renderAll(){
+  renderKpisAndText();
+  drawSelectedComparison();
+  drawLineChart("trendChart",[{key:"accidents",name:"Accidents",color:"#2563eb"},{key:"injured",name:"Injured",color:"#f97316"},{key:"deaths",name:"Deaths",color:"#dc2626"}],"Absolute value");
+  drawLineChart("indexChart",[{key:"accidentsIndex",name:"Accidents",color:"#2563eb"},{key:"injuredIndex",name:"Injured",color:"#f97316"},{key:"deathsIndex",name:"Deaths",color:"#dc2626"}],"Index, 2001 = 100");
+  drawYoy();
+  drawLineChart("severityChart",[{key:"severity",name:"Severity",color:"#f97316"}],"Injured people per accident");
+  drawHorizontalBar("municipalityAbsChart", municipalityData, "accidents", "#2563eb", "Number of accidents", 0);
+  drawHorizontalBar("municipalityRiskChart", municipalityData, "risk", "#0891b2", "Accidents per 10,000 residents", 1);
+  drawMunicipalityDifference();
+  drawMunicipalityYearCompare();
+  drawSelectedMunicipalityTrend();
+  renderMunicipalityYearKpisAndTable();
+  drawPie();
+  renderTables();
+}
+
+setupSelects();
+setupMunicipalitySelect();
+renderAll();
+window.addEventListener("resize", renderAll);
+</script>
+</body>
+</html>
