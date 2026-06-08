@@ -135,7 +135,7 @@ select{border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;background:
   <div class="card span6">
     <h2>Year-over-year percentage change</h2>
     <svg id="yoyChart" class="chart"></svg>
-    <p class="small">Highlights sudden changes, including the Covid-period drop around 2020.</p>
+    <p class="small">Highlights sudden changes, including the Covid-period drop around 2020 and 2021.</p>
   </div>
 
   <div class="card span6">
@@ -725,10 +725,11 @@ function renderKpisAndText(){
   setMetric("deathChange","deathAbs",death,B.deaths-A.deaths);
   let sevEl=document.getElementById("sevChange");
   if(sevEl){sevEl.textContent=pct(sev);sevEl.className="kpi "+cls(sev);}
-  const covid=(ya<=2020&&yb>=2020)||(yb<=2020&&ya>=2020);
+  const covid = ya === 2020 || yb === 2020;
+  const covid2 =  ya === 2021 || yb === 2021;
   const interp=document.getElementById("interpretation");
   if(interp){
-    interp.textContent=`Between ${ya} and ${yb}, accidents changed by ${pct(acc)}, injured people by ${pct(inj)}, and deaths by ${pct(death)}. ${death<acc&&death<inj?"Deaths changed more strongly than accident frequency.":"The indicators move in a broadly similar direction, but with different intensity."} ${covid?"The selected period includes 2020, so Covid-19 mobility restrictions should be considered.":"The two-year comparison should be read together with the all-years trend."}`;
+    interp.textContent=`Between ${ya} and ${yb}, accidents changed by ${pct(acc)}, injured people by ${pct(inj)}, and deaths by ${pct(death)}. ${death<acc&&death<inj?"Deaths changed more strongly than accident frequency.":"The indicators move in a broadly similar direction, but with different intensity."} ${covid?"The selected period includes 2020, so Covid-19 mobility restrictions should be considered." : covid2 ? "The selected period includes 2021, so Covid-19 mobility restrictions should be considered." : "The two-year comparison should be read together with the all-years trend."}`;
   }
   const topAbs=municipalityData.slice().sort((a,b)=>b.accidents-a.accidents)[0], topRisk=municipalityData.slice().sort((a,b)=>b.risk-a.risk)[0], avgSev=municipalityData.reduce((s,d)=>s+d.severity,0)/municipalityData.length;
   if(document.getElementById("topAbsMun")) document.getElementById("topAbsMun").textContent=topAbs.municipality.split("—")[0].trim();
